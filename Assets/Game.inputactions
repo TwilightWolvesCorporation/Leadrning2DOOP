@@ -95,8 +95,30 @@
         {
             "name": "UI",
             "id": "3afdee61-ea3b-418f-9c5f-58d997b080e5",
-            "actions": [],
-            "bindings": []
+            "actions": [
+                {
+                    "name": "Drag",
+                    "type": "Button",
+                    "id": "52a3aadd-716c-425a-880c-a62a913fe16c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "81975244-9282-475b-989a-ebd36544e61d",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Drag",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []
