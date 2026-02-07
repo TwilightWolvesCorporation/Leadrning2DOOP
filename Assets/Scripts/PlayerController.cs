@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,20 +12,30 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float sprintSpeedModify;
     [SerializeField] private float jumpForce;
 
-    [Header("Controls")]
+    [Header("Controls")] 
     [SerializeField] private InputActionReference move;
     [SerializeField] private InputActionReference jump;
     [SerializeField] private InputActionReference sprint;
     [SerializeField] private bool isGrounded;
 
+    [SerializeField] private InputActionReference dragBox;
+    [SerializeField] private InputActionReference spawnBox;
+    [SerializeField] private InputActionReference deleteBox;
+    [SerializeField] private GameObject box;
+
+
     [SerializeField] private bool isPause;
 
     private float _velocityX = 0;
+
+    private const float TimeSpawn = 5;
+    private bool _isCanSpawn = true;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        spawnBox.action.performed += _ => SpawnBox();
     }
 
     private void Update()
@@ -69,5 +80,26 @@ public class PlayerController : MonoBehaviour
         if (!ctx.performed) return;
         _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 0f);
         _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+    }
+
+    private void SpawnBox()
+    {
+        if (!_isCanSpawn)
+        {
+            Debug.Log("I not can spawns");
+            return;
+        }
+        _isCanSpawn = false;
+        var newBox = Instantiate(box, _rb.position + new Vector2(transform.localRotation.y == 0 ? 1 : -1, 0),
+            box.GetComponent<BoxCollider2D>().transform.rotation);
+        newBox.GetComponent<MouseDrag>().SetBinds(dragBox, deleteBox);
+        StartCoroutine(SpawnBoxTime());
+    }
+
+    private IEnumerator SpawnBoxTime()
+    {
+        _isCanSpawn = false;
+        yield return new WaitForSeconds(TimeSpawn);
+        _isCanSpawn = true;
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,36 +5,42 @@ public class MouseDrag : MonoBehaviour
 {
     private Camera _cam;
     private Rigidbody2D _rb;
-    [SerializeField] private InputActionReference drag;
-    [SerializeField] private float maxDragSpeed;
-    [SerializeField] private bool freezeRotation;
+    private InputActionReference _drag;
+    private InputActionReference _delete;
+    [SerializeField] private float maxDragSpeed = 15f;
+    [SerializeField] private bool freezeRotation = true;
 
     private bool _isDragging;
     private Vector2 _dragOffset;
     private Vector2 _lastVelocity;
-    
+
     private RigidbodyConstraints2D _savedConstraint;
-
-    private void Awake()
+    
+    private void OnMouseDownC(InputAction.CallbackContext ctx)
     {
-        _cam = Camera.main;
-        _rb = GetComponent<Rigidbody2D>();
-        drag.action.performed += _ => OnMouseDown();
-    }
-
-    private void OnMouseDown()
-    {
+        if (!ctx.performed) return;
         if (_isDragging) return;
         var col = Physics2D.OverlapPoint(GetMousePosition());
-        if (col == null) return;
-        drag.action.performed += _ => OnMouseUp();
+        if (col == null || col.gameObject != gameObject) return;
+        _drag.action.performed -= OnMouseDownC;
+        _drag.action.canceled += OnMouseUpC;
         StartDragging();
     }
 
-    private void OnMouseUp()
+    private void DeleteDownC(InputAction.CallbackContext ctx)
     {
-        if(!_isDragging) return;
-        drag.action.canceled += _ => OnMouseUp();
+        if (!ctx.performed) return;
+        var col = Physics2D.OverlapPoint(GetMousePosition());
+        if (col == null || col.gameObject != gameObject) return;
+        Destroy(gameObject);
+    }
+
+    private void OnMouseUpC(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.canceled) return;
+        if (!_isDragging) return;
+        _drag.action.canceled -= OnMouseUpC;
+        _drag.action.performed += OnMouseDownC;
         StopDragging();
     }
 
@@ -44,18 +49,16 @@ public class MouseDrag : MonoBehaviour
         _isDragging = true;
 
         _savedConstraint = _rb.constraints;
-        if(freezeRotation) _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        if (freezeRotation) _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         _dragOffset = _rb.position - GetMousePosition();
         _lastVelocity = Vector2.zero;
-        drag.action.canceled += _ => OnMouseDown();
     }
 
     private void StopDragging()
     {
         _isDragging = false;
-        _rb.constraints =  _savedConstraint;
+        _rb.constraints = _savedConstraint;
         _rb.linearVelocity = _lastVelocity;
-        drag.action.performed += _ => OnMouseDown();
     }
 
     private void FixedUpdate()
@@ -71,5 +74,22 @@ public class MouseDrag : MonoBehaviour
     private Vector2 GetMousePosition()
     {
         return _cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+    }
+
+    public void SetBinds(InputActionReference dragBox, InputActionReference deleteBox)
+    {
+        _drag = dragBox;
+        _delete = deleteBox;
+        _cam = Camera.main;
+        _rb = GetComponent<Rigidbody2D>();
+        _drag.action.performed += OnMouseDownC;
+        _delete.action.performed += DeleteDownC;
+    }
+
+    private void OnDestroy()
+    {
+        _drag.action.performed -= OnMouseDownC;
+        _drag.action.canceled -= OnMouseUpC;
+        _delete.action.performed -= DeleteDownC;
     }
 }
