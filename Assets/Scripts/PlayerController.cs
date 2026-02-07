@@ -1,6 +1,8 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,8 +14,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float sprintSpeedModify;
     [SerializeField] private float jumpForce;
 
-    [Header("Controls")] 
-    [SerializeField] private InputActionReference move;
+    [Header("Controls")] [SerializeField] private InputActionReference move;
     [SerializeField] private InputActionReference jump;
     [SerializeField] private InputActionReference sprint;
     [SerializeField] private bool isGrounded;
@@ -22,7 +23,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference spawnBox;
     [SerializeField] private InputActionReference deleteBox;
     [SerializeField] private GameObject box;
-
+    
+    [SerializeField] private TMP_Text hpText;
 
     [SerializeField] private bool isPause;
 
@@ -30,6 +32,13 @@ public class PlayerController : MonoBehaviour
 
     private const float TimeSpawn = 5;
     private bool _isCanSpawn = true;
+
+    private int _hp;
+
+    public void SetHp(int hp)
+    {
+        _hp = hp;
+    }
 
     private void Awake()
     {
@@ -89,6 +98,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("I not can spawns");
             return;
         }
+
         _isCanSpawn = false;
         var newBox = Instantiate(box, _rb.position + new Vector2(transform.localRotation.y == 0 ? 1 : -1, 0),
             box.GetComponent<BoxCollider2D>().transform.rotation);

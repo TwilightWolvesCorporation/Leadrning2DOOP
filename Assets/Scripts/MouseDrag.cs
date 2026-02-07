@@ -13,7 +13,7 @@ public class MouseDrag : MonoBehaviour
     private bool _isDragging;
     private Vector2 _dragOffset;
     private Vector2 _lastVelocity;
-
+    
     private RigidbodyConstraints2D _savedConstraint;
     
     private void OnMouseDownC(InputAction.CallbackContext ctx)

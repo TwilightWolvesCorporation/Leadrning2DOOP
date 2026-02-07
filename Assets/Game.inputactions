@@ -108,6 +108,17 @@
                 },
                 {
                     "name": "",
+                    "id": "8318f811-3aba-4150-bf70-410f8b98ae4e",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DeleteBox",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "a8a1f31c-ef2c-47cc-aac2-dfe65dddc027",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
@@ -224,6 +235,15 @@
                     "type": "PassThrough",
                     "id": "dac78be5-4201-4e9b-bb38-ef4e94255e48",
                     "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "672c8650-797b-4bed-b4f3-b078cc0627f3",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -403,6 +423,17 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "ScrollWheel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b6affe17-2402-4ef8-b8b7-37e7cfedd301",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
