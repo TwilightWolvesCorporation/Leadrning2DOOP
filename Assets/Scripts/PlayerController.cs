@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private TMP_Text hpText;
 
     [SerializeField] private bool isPause;
+    
+    [SerializeField] private AudioSource audioSource;
 
     private float _velocityX = 0;
 
@@ -98,7 +100,8 @@ public class PlayerController : MonoBehaviour
             Debug.Log("I not can spawns");
             return;
         }
-
+        audioSource.Play();
+        
         _isCanSpawn = false;
         var newBox = Instantiate(box, _rb.position + new Vector2(transform.localRotation.y == 0 ? 1 : -1, 0),
             box.GetComponent<BoxCollider2D>().transform.rotation);
