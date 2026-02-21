@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,12 +15,44 @@ public class UIController : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private InputActionAsset inputPlayer;
     [SerializeField] private InputActionReference inputPause;
-
+    
     private bool _isPaused = false;
+
+    [SerializeField] private PlayerInput input;
+    private string _savePath;
+    [SerializeField] private List<SelectKey>  selectKeys;
+    
 
     private void Awake()
     {
+        _savePath = Path.Combine(Application.dataPath, "InputBindings.json");
+        LoadBindings();
         inputPause.action.performed += SetActionPause;
+    }
+
+    private void LoadBindings()
+    {
+        if (!File.Exists(_savePath)) return;
+        var jsonBindings = File.ReadAllText(_savePath);
+        input.actions.LoadBindingOverridesFromJson(jsonBindings);
+    }
+
+    private void SaveBindings()
+    {
+        var jsonBindings = input.actions.SaveBindingOverridesAsJson();
+        File.WriteAllText(_savePath, jsonBindings);
+    }
+
+    public void ResetToDefaultBindings()
+    {
+        input.actions.RemoveAllBindingOverrides();
+        if (File.Exists(_savePath)) File.Delete(_savePath);
+        foreach (var selectKey in selectKeys) selectKey.SetText();
+    }
+
+    public void SetFullscreenMode(bool isFullscreen)
+    {
+        Screen.fullScreen = isFullscreen;
     }
 
     private void SetActionPause(InputAction.CallbackContext ctx)
@@ -43,11 +77,13 @@ public class UIController : MonoBehaviour
 
     public void Restart()
     {
+        SaveBindings();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
     public void Exit()
     {
+        SaveBindings();
         SceneManager.LoadScene("MainMenu");
     }
 

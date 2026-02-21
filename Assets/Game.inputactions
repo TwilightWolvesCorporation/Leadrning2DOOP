@@ -3,7 +3,7 @@
     "name": "Game",
     "maps": [
         {
-            "name": "Playr",
+            "name": "Player",
             "id": "e9dedf49-af9d-4a24-82fa-0e43f0ffb123",
             "actions": [
                 {
@@ -31,10 +31,10 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
-                    "name": "Drag",
+                    "name": "DragBox",
                     "type": "Button",
                     "id": "415721cf-04ef-4351-8e9e-a05c336690df",
                     "expectedControlType": "",
@@ -59,6 +59,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "MousePosition",
+                    "type": "Value",
+                    "id": "b5edabf4-9292-4812-bf04-7cec15ec0783",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -124,7 +133,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Drag",
+                    "action": "DragBox",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -158,6 +167,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "SpawnBox",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f3aa441-6805-4f96-9885-ec74b0c263c4",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MousePosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

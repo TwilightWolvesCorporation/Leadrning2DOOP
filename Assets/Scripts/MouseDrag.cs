@@ -1,47 +1,29 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MouseDrag : MonoBehaviour
+public class DraggableBox : MonoBehaviour
 {
     private Camera _cam;
     private Rigidbody2D _rb;
-    private InputActionReference _drag;
-    private InputActionReference _delete;
-    [SerializeField] private float maxDragSpeed = 15f;
-    [SerializeField] private bool freezeRotation = true;
+    [SerializeField] private float maxDragSpeed;
+    [SerializeField] private bool freezeRotation;
 
     private bool _isDragging;
     private Vector2 _dragOffset;
     private Vector2 _lastVelocity;
-    
+
     private RigidbodyConstraints2D _savedConstraint;
-    
-    private void OnMouseDownC(InputAction.CallbackContext ctx)
+
+    private void Awake()
     {
-        if (!ctx.performed) return;
-        if (_isDragging) return;
-        var col = Physics2D.OverlapPoint(GetMousePosition());
-        if (col == null || col.gameObject != gameObject) return;
-        _drag.action.performed -= OnMouseDownC;
-        _drag.action.canceled += OnMouseUpC;
-        StartDragging();
+        _cam = Camera.main;
+        _rb = GetComponent<Rigidbody2D>();
     }
 
-    private void DeleteDownC(InputAction.CallbackContext ctx)
+    public void Dragging(bool isDrag)
     {
-        if (!ctx.performed) return;
-        var col = Physics2D.OverlapPoint(GetMousePosition());
-        if (col == null || col.gameObject != gameObject) return;
-        Destroy(gameObject);
-    }
-
-    private void OnMouseUpC(InputAction.CallbackContext ctx)
-    {
-        if (!ctx.canceled) return;
-        if (!_isDragging) return;
-        _drag.action.canceled -= OnMouseUpC;
-        _drag.action.performed += OnMouseDownC;
-        StopDragging();
+        if (isDrag) StartDragging();
+        else StopDragging();
     }
 
     private void StartDragging()
@@ -74,22 +56,5 @@ public class MouseDrag : MonoBehaviour
     private Vector2 GetMousePosition()
     {
         return _cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-    }
-
-    public void SetBinds(InputActionReference dragBox, InputActionReference deleteBox)
-    {
-        _drag = dragBox;
-        _delete = deleteBox;
-        _cam = Camera.main;
-        _rb = GetComponent<Rigidbody2D>();
-        _drag.action.performed += OnMouseDownC;
-        _delete.action.performed += DeleteDownC;
-    }
-
-    private void OnDestroy()
-    {
-        _drag.action.performed -= OnMouseDownC;
-        _drag.action.canceled -= OnMouseUpC;
-        _delete.action.performed -= DeleteDownC;
     }
 }

@@ -2,32 +2,28 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     private static readonly int State = Animator.StringToHash("State");
     private Rigidbody2D _rb;
     private Animator _animator;
+    private Camera _camera;
+    private InputActionMap _inputActionMap;
+
     [SerializeField] private SpriteRenderer playerSprite;
     [SerializeField] private float speed;
     [SerializeField] private float sprintSpeedModify;
     [SerializeField] private float jumpForce;
 
-    [Header("Controls")] [SerializeField] private InputActionReference move;
-    [SerializeField] private InputActionReference jump;
-    [SerializeField] private InputActionReference sprint;
     [SerializeField] private bool isGrounded;
 
-    [SerializeField] private InputActionReference dragBox;
-    [SerializeField] private InputActionReference spawnBox;
-    [SerializeField] private InputActionReference deleteBox;
     [SerializeField] private GameObject box;
-    
+
     [SerializeField] private TMP_Text hpText;
 
     [SerializeField] private bool isPause;
-    
+
     [SerializeField] private AudioSource audioSource;
 
     private float _velocityX = 0;
@@ -35,29 +31,29 @@ public class PlayerController : MonoBehaviour
     private const float TimeSpawn = 5;
     private bool _isCanSpawn = true;
 
-    private int _hp;
+    private float _moveInput;
+    private bool _isRun;
+    private bool _boxDragged;
+    private DraggableBox _draggableBox;
 
-    public void SetHp(int hp)
-    {
-        _hp = hp;
-    }
+    private int _hp;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
-        spawnBox.action.performed += _ => SpawnBox();
+        _camera = Camera.main;
+        _inputActionMap = GetComponent<PlayerInput>().currentActionMap;
     }
 
     private void Update()
     {
-        var isRun = sprint.action.ReadValue<float>() != 0;
-        _velocityX = move.action.ReadValue<float>() * (isRun ? sprintSpeedModify : 1);
+        _velocityX = _moveInput * (_isRun ? sprintSpeedModify : 1);
 
         if (!isGrounded) _animator.SetInteger(State, 3);
         else if (_velocityX == 0) _animator.SetInteger(State, 0);
-        else if (_velocityX != 0 && !isRun) _animator.SetInteger(State, 1);
-        else if (_velocityX != 0 && isRun) _animator.SetInteger(State, 2);
+        else if (_velocityX != 0 && !_isRun) _animator.SetInteger(State, 1);
+        else if (_velocityX != 0 && _isRun) _animator.SetInteger(State, 2);
     }
 
     private void FixedUpdate()
@@ -67,6 +63,76 @@ public class PlayerController : MonoBehaviour
             FlipPlayer();
             _rb.linearVelocity = new Vector2(_velocityX * speed, _rb.linearVelocity.y);
         }
+    }
+
+    public void SetHp(int hp)
+    {
+        _hp = hp;
+    }
+
+    public void OnMove(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed || ctx.canceled)
+        {
+            _moveInput = ctx.ReadValue<float>();
+        }
+    }
+
+    public void OnJump(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed || !isGrounded) return;
+        _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 0f);
+        _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+    }
+
+    public void OnSprint(InputAction.CallbackContext ctx)
+    {
+        if (ctx.started)
+        {
+            _isRun = true;
+        }
+        else if (ctx.canceled)
+        {
+            _isRun = false;
+        }
+    }
+
+    public void OnDragBox(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed && !_boxDragged)
+        {
+            var ray = _camera.ScreenPointToRay(_inputActionMap["MousePosition"].ReadValue<Vector2>());
+            var hit = Physics2D.GetRayIntersection(ray, 100f);
+            if (!hit) return;
+            if (hit.collider.gameObject.name != "DraggableBox") return;
+            _draggableBox = hit.collider.gameObject.GetComponent<DraggableBox>();
+            _boxDragged = true;
+            _draggableBox.Dragging(true);
+        }
+        else if (_draggableBox && ctx.canceled && _boxDragged)
+        {
+            _boxDragged = false;
+            _draggableBox.Dragging(false);
+            _draggableBox = null;
+        }
+    }
+
+    public void OnDeleteBox(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+        var ray = _camera.ScreenPointToRay(_inputActionMap["MousePosition"].ReadValue<Vector2>());
+        var hit = Physics2D.GetRayIntersection(ray, 100f);
+        if (!hit) return;
+        if (hit.collider.gameObject.name == "DraggableBox")
+        {
+            Destroy(hit.collider.gameObject);
+        }
+    }
+
+    public void OnSpawnBox(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+        SpawnBox();
     }
 
     private void FlipPlayer()
@@ -82,15 +148,6 @@ public class PlayerController : MonoBehaviour
     public void PlayerIsGrounded(bool isGroundedCheck)
     {
         isGrounded = isGroundedCheck;
-        if (isGroundedCheck) jump.action.performed += OnJumpPerformed;
-        else jump.action.performed -= OnJumpPerformed;
-    }
-
-    private void OnJumpPerformed(InputAction.CallbackContext ctx)
-    {
-        if (!ctx.performed) return;
-        _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 0f);
-        _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
     }
 
     private void SpawnBox()
@@ -100,12 +157,12 @@ public class PlayerController : MonoBehaviour
             Debug.Log("I not can spawns");
             return;
         }
+
         audioSource.Play();
-        
+
         _isCanSpawn = false;
-        var newBox = Instantiate(box, _rb.position + new Vector2(transform.localRotation.y == 0 ? 1 : -1, 0),
-            box.GetComponent<BoxCollider2D>().transform.rotation);
-        newBox.GetComponent<MouseDrag>().SetBinds(dragBox, deleteBox);
+        Instantiate(box, _rb.position + new Vector2(transform.localRotation.y == 0 ? 1 : -1, 0),
+            box.GetComponent<BoxCollider2D>().transform.rotation).name = "DraggableBox";
         StartCoroutine(SpawnBoxTime());
     }
 
