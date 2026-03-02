@@ -1,1 +1,1 @@
-{"bindings":[{"action":"Playr/SpawnBox","id":"12342d6d-59c6-4fae-9cf9-09322092e1af","path":"<Keyboard>/T","interactions":"null","processors":"null"}]}
+{"bindings":[{"action":"Player/SpawnBox","id":"12342d6d-59c6-4fae-9cf9-09322092e1af","path":"<Keyboard>/T","interactions":"null","processors":"null"}]}
