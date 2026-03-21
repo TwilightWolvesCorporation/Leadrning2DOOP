@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isPause;
 
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private ParticleSystem hurtParticles;
 
     private float _velocityX = 0;
 
@@ -56,6 +57,12 @@ public class PlayerController : MonoBehaviour
         else if (_velocityX != 0 && _isRun) _animator.SetInteger(State, 2);
     }
 
+    public void Hurt(int damage)
+    {
+        hurtParticles.Play();
+        SetHp(_hp - damage);
+    }
+    
     private void FixedUpdate()
     {
         if (!isPause)

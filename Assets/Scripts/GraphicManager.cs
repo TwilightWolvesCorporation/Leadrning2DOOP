@@ -17,7 +17,7 @@ public class GraphicManager : MonoBehaviour
 
     private void Start()
     {
-        SetGraphicPreset(GraphicManagerExtension.BinaryFileManager._data.qualityLevelIndex);
+        // SetGraphicPreset(GraphicManagerExtension.BinaryFileManager._data.qualityLevelIndex);
     }
 
     public void SetGraphicPreset(int graphicIndex)
