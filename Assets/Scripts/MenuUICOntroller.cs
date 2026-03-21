@@ -40,6 +40,8 @@ public class MenuUIController : MonoBehaviour
     public void SetFullscreenMode(bool isFullscreen)
     {
         Screen.fullScreen = isFullscreen;
+        Screen.SetResolution(100, 100, isFullscreen);
+        
     }
 
     public void StartGame()
